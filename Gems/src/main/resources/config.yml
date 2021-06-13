@@ -1,0 +1,29 @@
+database:
+  name: "noturn"
+  address: "localhost"
+  port: 3306
+  username: "root"
+  password: "password"
+
+gemas:
+  defaultDropAmount: 1 #multiplicado pelo looting
+  defaultSellValue: 1000
+  sellMultipliers: #gemas.vender.vip1
+    vip1: 2
+    vip2: 3
+    vip3: 4
+    vip5: 5
+
+gem-item:
+  material: 351
+  data: 9
+  displayName: "&dGema"
+  lore:
+    - "&7Clique para ativar!"
+
+entities:
+  - "IRON_GOLEM"
+  - "WITHER"
+  - "PIG_ZOMBIE"
+  - "SLIME"
+  - "ZOMBIE"

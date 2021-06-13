@@ -1,0 +1,8 @@
+name: NoturnGemas
+main: com.noturn.gems.NoturnGemsPlugin
+version: 0.1-ALPHA
+author: yiatzz
+
+depend:
+  - Vault
+  - PlaceholderAPI
