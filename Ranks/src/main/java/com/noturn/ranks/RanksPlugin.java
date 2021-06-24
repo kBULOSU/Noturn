@@ -1,33 +1,37 @@
-package com.noturn.gems;
+package com.noturn.ranks;
 
-import com.noturn.gems.commands.GemsCommand;
-import com.noturn.gems.controller.GemsUserController;
-import com.noturn.gems.dao.GemsUserDAO;
-import com.noturn.gems.database.MysqlDatabase;
-import com.noturn.gems.listeners.EntityListeners;
-import com.noturn.gems.listeners.item.GemItemListener;
-import com.noturn.gems.listeners.player.PlayerConnectionListener;
-import com.noturn.gems.misc.placeholder.GemPlaceHolder;
+import com.noturn.gems.NoturnGemsPlugin;
+import com.noturn.ranks.cache.local.PlayerRanksLocalCache;
+import com.noturn.ranks.commands.RanksCommand;
+import com.noturn.ranks.dao.PlayerRanksDAO;
+import com.noturn.ranks.database.MysqlDatabase;
+import com.noturn.ranks.listeners.PlayerJoinListener;
+import com.noturn.ranks.loader.RanksLoader;
 import lombok.Getter;
 import me.saiintbrisson.minecraft.command.CommandFrame;
+import net.milkbowl.vault.economy.Economy;
+import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.net.InetSocketAddress;
 
-public class NoturnGemsPlugin extends JavaPlugin {
+public class RanksPlugin extends JavaPlugin {
 
-    public static NoturnGemsPlugin INSTANCE;
+    public static RanksPlugin INSTANCE;
 
     @Getter
     private MysqlDatabase mysqlDatabase;
 
     @Getter
-    private GemsUserDAO userDao;
+    private PlayerRanksDAO playerRanksDAO;
 
     @Getter
-    private GemsUserController userController;
+    private PlayerRanksLocalCache playerRanksCache;
+
+    @Getter
+    private Economy economy;
 
     @Override
     public void onEnable() {
@@ -37,14 +41,16 @@ public class NoturnGemsPlugin extends JavaPlugin {
 
         saveDefaultConfig();
 
+        economy = Bukkit.getServicesManager().getRegistration(Economy.class).getProvider();
+
+        new RanksLoader().load(getConfig());
+
         createDatabase();
 
-        userDao = new GemsUserDAO(mysqlDatabase);
-        userDao.createTable();
+        playerRanksDAO = new PlayerRanksDAO(mysqlDatabase);
+        playerRanksDAO.createTable();
 
-        userController = new GemsUserController();
-
-        new GemPlaceHolder(userController).register();
+        playerRanksCache = new PlayerRanksLocalCache();
 
         CommandFrame frame = new CommandFrame(this);
         frame.setErrorMessage("§cUm erro ocorreu! {error}");
@@ -52,14 +58,19 @@ public class NoturnGemsPlugin extends JavaPlugin {
         frame.setUsageMessage("§cUtilize /{usage}.");
         frame.setIncorrectTargetMessage("§cVocê não pode utilizar este comando pois ele é direcionado apenas para {target}.");
 
-        frame.register(new GemsCommand(userController, userDao));
+        frame.register(
+                new RanksCommand(
+                        playerRanksDAO,
+                        playerRanksCache,
+                        NoturnGemsPlugin.INSTANCE.getUserController(),
+                        NoturnGemsPlugin.INSTANCE.getUserDao(),
+                        economy
+                )
+        );
 
         PluginManager pluginManager = getServer().getPluginManager();
-        pluginManager.registerEvents(new PlayerConnectionListener(userDao, userController), this);
-        pluginManager.registerEvents(new EntityListeners(), this);
-        pluginManager.registerEvents(new GemItemListener(userController, userDao), this);
+        pluginManager.registerEvents(new PlayerJoinListener(playerRanksDAO, playerRanksCache), this);
 
-        System.out.println("Plugin de gemas ligado!");
     }
 
     @Override
@@ -86,8 +97,6 @@ public class NoturnGemsPlugin extends JavaPlugin {
         mysqlDatabase = new MysqlDatabase(inetSocketAddress, username, password, databaseName);
         mysqlDatabase.openConnection();
 
-        System.out.println("Conexão MySQL aberta!");
+        getLogger().fine("Conexão MySQL aberta!");
     }
-
-
 }

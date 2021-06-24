@@ -1,0 +1,15 @@
+Ranks:
+  1: #id do rank, não pode ter outro igual. E é extremamente importante colocar em ordem.
+    Name: "Terra III"
+    default: true
+    commandsOnRankup:
+      - "dardinheiro <player> 1"
+    coinsPrice: 10000
+    gemsPrice: 100000
+
+database:
+  name: "noturn"
+  address: "localhost"
+  port: 3306
+  username: "root"
+  password: "password"

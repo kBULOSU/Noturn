@@ -7,22 +7,46 @@ public class NumberUtil {
 
     private static final NumberFormat NUMBER_FORMAT = NumberFormat.getInstance(new Locale("pt", "BR"));
 
-    private static final String[] MONEY_FORMATS = {"M", "B", "T", "Q", "QQ", "S", "SS", "OC", "N", "D", "UN", "DD",
-            "TR", "QT", "QN", "SD", "SPD", "OD", "ND", "VG", "UVG", "DVG", "TVG"};
+    private final static String[] CHARS = {
+            "K",
+            "M",
+            "B",
+            "T",
+            "Q",
+            "QQ",
+            "S",
+            "SS",
+            "OC",
+            "N",
+            "D",
+            "UN",
+            "DD",
+            "TR",
+            "QT",
+            "QN",
+            "SD",
+            "SPD",
+            "OD",
+            "ND",
+            "VG",
+            "UVG"
+    };
 
     public static String format(double number) {
         return NUMBER_FORMAT.format(number);
     }
 
-    public static String toK(double value) {
-        if (value <= 999999.0D) {
-            return format(value);
+    public static String toK(double count) {
+        if (count < 1000D) {
+            return String.format("%.2f", count);
         }
 
-        int zeros = (int) Math.log10(value);
-        int thou = zeros / 3;
-        int arrayIndex = Math.min(thou - 2, MONEY_FORMATS.length - 1);
+        int exp = (int) (Math.log(count) / Math.log(1000D));
 
-        return format(value / Math.pow(1000.0D, (double) arrayIndex + 2.0D)) + MONEY_FORMATS[arrayIndex];
+        return String.format(
+                "%.0f%s",
+                count / Math.pow(1000D, exp),
+                CHARS[exp - 1 >= CHARS.length ? CHARS.length - 1 : exp - 1]
+        );
     }
 }

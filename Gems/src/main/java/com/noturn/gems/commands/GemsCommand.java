@@ -1,8 +1,8 @@
 package com.noturn.gems.commands;
 
 import com.noturn.gems.NoturnGemsConstants;
-import com.noturn.gems.NoturnGemsPlugin;
 import com.noturn.gems.controller.GemsUserController;
+import com.noturn.gems.dao.GemsUserDAO;
 import com.noturn.gems.misc.utils.NumberUtil;
 import lombok.RequiredArgsConstructor;
 import me.saiintbrisson.minecraft.command.Execution;
@@ -11,7 +11,6 @@ import me.saiintbrisson.minecraft.command.annotations.CommandTarget;
 import me.saiintbrisson.minecraft.command.argument.Argument;
 import me.saiintbrisson.minecraft.command.exceptions.IncorrectTargetException;
 import org.bukkit.Sound;
-import org.bukkit.craftbukkit.v1_8_R3.inventory.CraftItemStack;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
@@ -21,6 +20,7 @@ import java.util.Map;
 public class GemsCommand {
 
     private final GemsUserController userController;
+    private final GemsUserDAO userDAO;
 
     @Command(
             name = "gems",
@@ -34,10 +34,15 @@ public class GemsCommand {
                 throw new IncorrectTargetException(CommandTarget.PLAYER);
             }
 
-            String formatted = NumberUtil.toK(userController.get(execution.getPlayer().getName()));
+            Double value = userController.get(execution.getPlayer().getName());
+            if (value == null) {
+                execution.sendMessage("§eVocê não possui nenhuma gema.");
+                return;
+            }
+
+            String formatted = NumberUtil.toK(value);
 
             execution.sendMessage("§eVocê possui §f" + formatted + " §egemas.");
-
             return;
         }
 
@@ -85,7 +90,13 @@ public class GemsCommand {
             return;
         }
 
-        userController.merge(player, amount, false);
+        Double merge = userController.merge(player, amount, false);
+
+        if (merge == null) {
+            userDAO.delete(player);
+        } else {
+            userDAO.insertOrUpdate(player, merge);
+        }
 
         execution.sendMessage(
                 "§eVocê removeu §f%s §egemas de §f%s§e!",
@@ -102,6 +113,7 @@ public class GemsCommand {
     )
     public void defineCommand(Execution execution, String player, double amount) {
         userController.put(player, amount);
+        userDAO.insertOrUpdate(player, amount);
 
         execution.sendMessage(
                 "§eVocê definiu §f%s §egemas para §f%s§e!",
@@ -130,8 +142,7 @@ public class GemsCommand {
                 continue;
             }
 
-            net.minecraft.server.v1_8_R3.ItemStack itemStack = CraftItemStack.asNMSCopy(content);
-            if (!itemStack.hasTag() || !itemStack.getTag().getBoolean("gem")) {
+            if (!content.isSimilar(NoturnGemsConstants.Config.ITEM)) {
                 continue;
             }
 
@@ -148,12 +159,13 @@ public class GemsCommand {
         double sellAmount = gemAmount * getUserMultiplier(player);
         double sellValue = sellAmount * NoturnGemsConstants.Config.DEFAULT_SELL_VALUE;
 
-        NoturnGemsPlugin.INSTANCE.getEconomy().depositPlayer(player.getName(), sellValue);
+        Double merge = userController.merge(player.getName(), sellAmount, true);
+        userDAO.insertOrUpdate(player.getName(), merge);
 
         player.playSound(player.getLocation(), Sound.VILLAGER_YES, 1f, 1f);
 
         execution.sendMessage(String.format(
-                "§eVocê vendeu §a%s §egemas por §a%s §ecoins!",
+                "§eVocê vendeu §a%s §eitens de gemas por §a%s §egemas!",
                 NumberUtil.toK(sellAmount),
                 NumberUtil.toK(sellValue)
         ));

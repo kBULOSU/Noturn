@@ -1,0 +1,9 @@
+name: NoturnRanks
+main: com.noturn.ranks.RanksPlugin
+version: 0.1-ALPHA
+author: yiatzz
+
+depend:
+  - Vault
+  - PlaceholderAPI
+  - NoturnGemas

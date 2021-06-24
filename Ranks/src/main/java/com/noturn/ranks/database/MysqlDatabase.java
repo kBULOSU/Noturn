@@ -1,4 +1,4 @@
-package com.noturn.gems.database;
+package com.noturn.ranks.database;
 
 import lombok.Getter;
 import lombok.NonNull;

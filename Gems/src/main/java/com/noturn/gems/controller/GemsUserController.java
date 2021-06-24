@@ -11,8 +11,8 @@ public class GemsUserController {
         return userMap.get(userName);
     }
 
-    public void merge(String userName, double amount, boolean sum) {
-        userMap.merge(userName, amount, (oldValue, newValue) -> {
+    public Double merge(String userName, double amount, boolean sum) {
+        return userMap.merge(userName, amount, (oldValue, newValue) -> {
             if (!sum) {
                 double withdraw = oldValue - newValue;
                 if (withdraw <= 0) {
@@ -34,4 +34,7 @@ public class GemsUserController {
         return userMap.remove(userName);
     }
 
+    public Map<String, Double> getUserMap() {
+        return userMap;
+    }
 }

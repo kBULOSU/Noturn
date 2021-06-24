@@ -14,6 +14,11 @@ gemas:
     vip3: 4
     vip5: 5
 
+per-entity-amount:
+  IRON_GOLEM: 100
+  SLIME: 100
+  PIG_ZOMBIE: 20
+
 gem-item:
   material: 351
   data: 9

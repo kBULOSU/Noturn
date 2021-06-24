@@ -4,11 +4,11 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.noturn.gems</groupId>
-    <artifactId>Gems</artifactId>
+    <groupId>com.noturn.ranks</groupId>
+    <artifactId>Ranks</artifactId>
     <version>0.1-ALPHA</version>
 
-    <name>NoturnGemas</name>
+    <name>NoturnRanks</name>
 
     <repositories>
         <repository>
@@ -29,10 +29,24 @@
 
     <dependencies>
         <dependency>
+            <groupId>com.noturn.gems</groupId>
+            <artifactId>Gems</artifactId>
+            <version>0.1-ALPHA</version>
+        </dependency>
+
+        <dependency>
             <groupId>app.ashcon</groupId>
             <artifactId>sportpaper-api</artifactId>
             <version>1.8.8-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.github.MilkBowl</groupId>
+            <artifactId>VaultAPI</artifactId>
+            <version>1.7</version>
+            <scope>system</scope>
+            <systemPath>C:/Users/bob_b/Downloads/Vault.jar</systemPath>
         </dependency>
 
         <dependency>
@@ -66,8 +80,8 @@
     </dependencies>
 
     <build>
-        <defaultGoal>clean install</defaultGoal>
-        <finalName>NoturnGemas</finalName>
+        <defaultGoal>clean package</defaultGoal>
+        <finalName>NoturnRanks</finalName>
 
         <plugins>
 

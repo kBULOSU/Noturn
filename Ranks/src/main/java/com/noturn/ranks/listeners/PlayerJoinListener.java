@@ -1,23 +1,23 @@
-package com.noturn.gems.listeners.player;
+package com.noturn.ranks.listeners;
 
-import com.noturn.gems.TaskManager;
-import com.noturn.gems.controller.GemsUserController;
-import com.noturn.gems.dao.GemsUserDAO;
+import com.noturn.ranks.Rank;
+import com.noturn.ranks.TaskManager;
+import com.noturn.ranks.cache.local.PlayerRanksLocalCache;
+import com.noturn.ranks.dao.PlayerRanksDAO;
 import lombok.RequiredArgsConstructor;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 @RequiredArgsConstructor
-public class PlayerConnectionListener implements Listener {
+public class PlayerJoinListener implements Listener {
 
-    private final GemsUserDAO userDAO;
-    private final GemsUserController userController;
+    private final PlayerRanksDAO playerRanksDAO;
+    private final PlayerRanksLocalCache playerRanksLocalCache;
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void on(AsyncPlayerPreLoginEvent event) {
@@ -25,23 +25,18 @@ public class PlayerConnectionListener implements Listener {
             return;
         }
 
-        final String name = event.getName();
+        String userName = event.getName();
 
-        final Double fetchedGems = userDAO.fetch(name);
+        Rank rank = playerRanksDAO.fetch(userName);
 
-        final Future<?> future = TaskManager.callSync(() -> userController.put(name, fetchedGems));
+        Future<Rank> rankFuture = TaskManager.callSync(() -> playerRanksLocalCache.put(userName, rank));
 
         try {
-            future.get();
+            rankFuture.get();
         } catch (final InterruptedException | ExecutionException e) {
             e.printStackTrace();
             event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_OTHER,
                     "§cHouve um erro ao carregar seus dados.");
         }
-    }
-
-    @EventHandler
-    public void on(PlayerQuitEvent event) {
-        userController.remove(event.getPlayer().getName());
     }
 }

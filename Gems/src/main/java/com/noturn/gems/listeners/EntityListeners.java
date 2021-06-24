@@ -1,14 +1,13 @@
 package com.noturn.gems.listeners;
 
 import com.noturn.gems.NoturnGemsConstants;
-import com.noturn.gems.item.GemItemSupplier;
-import net.minecraft.server.v1_8_R3.EnchantmentManager;
-import org.bukkit.craftbukkit.v1_8_R3.entity.CraftPlayer;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 
 public class EntityListeners implements Listener {
 
@@ -23,12 +22,31 @@ public class EntityListeners implements Listener {
             return;
         }
 
-        int level = EnchantmentManager.getBonusMonsterLootEnchantmentLevel(((CraftPlayer) killer).getHandle());
+        int loot = 0;
 
-        int multiplied = NoturnGemsConstants.Config.DEFAULT_DROP_AMOUNT * level;
+        ItemStack itemInHand = killer.getItemInHand();
+        if (itemInHand != null && itemInHand.containsEnchantment(Enchantment.LOOT_BONUS_MOBS)) {
+            loot = itemInHand.getEnchantmentLevel(Enchantment.LOOT_BONUS_MOBS);
+        }
 
-        ItemStack itemStack = new GemItemSupplier(multiplied).get();
+        int amount = NoturnGemsConstants.Config.PER_ENTITY_DROPS.getOrDefault(
+                event.getEntityType(), NoturnGemsConstants.Config.DEFAULT_DROP_AMOUNT
+        );
 
-        killer.getWorld().dropItem(event.getEntity().getLocation(), itemStack);
+        if (loot != 0) {
+            amount *= loot;
+        }
+
+        ItemStack itemStack = new ItemStack(NoturnGemsConstants.Config.ITEM_MATERIAL, NoturnGemsConstants.Config.ITEM_DATA);
+
+        ItemMeta itemMeta = itemStack.getItemMeta();
+        itemMeta.setDisplayName(NoturnGemsConstants.Config.ITEM_DISPLAY_NAME);
+        itemMeta.setLore(NoturnGemsConstants.Config.ITEM_LORE);
+
+        itemStack.setItemMeta(itemMeta);
+
+        itemStack.setAmount(amount);
+
+        killer.getWorld().dropItemNaturally(event.getEntity().getLocation(), itemStack);
     }
 }

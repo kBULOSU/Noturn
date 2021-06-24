@@ -2,9 +2,9 @@ package com.noturn.gems.listeners.item;
 
 import com.noturn.gems.NoturnGemsConstants;
 import com.noturn.gems.controller.GemsUserController;
+import com.noturn.gems.dao.GemsUserDAO;
 import lombok.RequiredArgsConstructor;
 import org.bukkit.Material;
-import org.bukkit.craftbukkit.v1_8_R3.inventory.CraftItemStack;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -17,6 +17,7 @@ import org.bukkit.material.MaterialData;
 public class GemItemListener implements Listener {
 
     private final GemsUserController userController;
+    private final GemsUserDAO userDAO;
 
     @EventHandler
     public void on(PlayerInteractEvent event) {
@@ -32,8 +33,7 @@ public class GemItemListener implements Listener {
             return;
         }
 
-        net.minecraft.server.v1_8_R3.ItemStack itemStack = CraftItemStack.asNMSCopy(itemInHand);
-        if (!itemStack.hasTag() || !itemStack.getTag().getBoolean("gem")) {
+        if (!itemInHand.isSimilar(NoturnGemsConstants.Config.ITEM)) {
             return;
         }
 
@@ -50,7 +50,7 @@ public class GemItemListener implements Listener {
             player.setItemInHand(new ItemStack(Material.AIR));
         }
 
-        userController.merge(player.getName(), 1, true);
+        Double merge = userController.merge(player.getName(), 1, true);
+        userDAO.insertOrUpdate(player.getName(), merge);
     }
-
 }

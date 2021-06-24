@@ -9,6 +9,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.concurrent.CompletableFuture;
 
 @RequiredArgsConstructor
 public class GemsUserDAO {
@@ -20,6 +21,11 @@ public class GemsUserDAO {
 
     private static final String INSERT_OR_UPDATE_QUERY = String.format(
             "INSERT INTO `%s` (`userName`, `gems`) VALUES (?,?) ON DUPLICATE KEY UPDATE `gems`=VALUES(gems);",
+            NoturnGemsConstants.Mysql.Tables.GEMS_TABLE
+    );
+
+    private static final String DELETE_QUERY = String.format(
+            "DELETE FROM `%s` WHERE `userName` = ? LIMIT 1;",
             NoturnGemsConstants.Mysql.Tables.GEMS_TABLE
     );
 
@@ -62,15 +68,36 @@ public class GemsUserDAO {
             return;
         }
 
-        try (PreparedStatement statement = connection.prepareStatement(INSERT_OR_UPDATE_QUERY)) {
+        CompletableFuture.runAsync(() -> {
+            try (PreparedStatement statement = connection.prepareStatement(INSERT_OR_UPDATE_QUERY)) {
 
-            statement.setString(1, userName);
-            statement.setDouble(2, gems);
+                statement.setString(1, userName);
+                statement.setDouble(2, gems);
 
-            statement.executeUpdate();
-        } catch (SQLException exception) {
-            exception.printStackTrace();
+                statement.executeUpdate();
+            } catch (SQLException exception) {
+                exception.printStackTrace();
+            }
+        });
+    }
+
+    public void delete(String userName) {
+        Connection connection = database.getConnection();
+        if (connection == null) {
+            System.out.println("Conexão nula ao tentar salvar o usuário " + userName + ".");
+            return;
         }
+
+        CompletableFuture.runAsync(() -> {
+            try (PreparedStatement statement = connection.prepareStatement(DELETE_QUERY)) {
+
+                statement.setString(1, userName);
+
+                statement.executeUpdate();
+            } catch (SQLException exception) {
+                exception.printStackTrace();
+            }
+        });
     }
 
     public void createTable() {
