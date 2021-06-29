@@ -7,6 +7,7 @@ import com.noturn.ranks.dao.PlayerRanksDAO;
 import com.noturn.ranks.database.MysqlDatabase;
 import com.noturn.ranks.listeners.PlayerJoinListener;
 import com.noturn.ranks.loader.RanksLoader;
+import com.noturn.ranks.misc.RankPlaceHolder;
 import lombok.Getter;
 import me.saiintbrisson.minecraft.command.CommandFrame;
 import net.milkbowl.vault.economy.Economy;
@@ -16,6 +17,7 @@ import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.net.InetSocketAddress;
+import java.util.List;
 
 public class RanksPlugin extends JavaPlugin {
 
@@ -39,11 +41,14 @@ public class RanksPlugin extends JavaPlugin {
 
         INSTANCE = this;
 
+        System.out.println("Plugin de Ranks iniciando..");
+
         saveDefaultConfig();
 
         economy = Bukkit.getServicesManager().getRegistration(Economy.class).getProvider();
 
-        new RanksLoader().load(getConfig());
+        List<Rank> loadedRanks = new RanksLoader().load(getConfig());
+        RanksRegistry.register(loadedRanks);
 
         createDatabase();
 
@@ -71,6 +76,9 @@ public class RanksPlugin extends JavaPlugin {
         PluginManager pluginManager = getServer().getPluginManager();
         pluginManager.registerEvents(new PlayerJoinListener(playerRanksDAO, playerRanksCache), this);
 
+        new RankPlaceHolder(playerRanksCache).register();
+
+        System.out.println("Plugin de Ranks iniciado!");
     }
 
     @Override

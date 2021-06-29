@@ -1,8 +1,8 @@
 package com.noturn.ranks.loader;
 
+import com.google.common.collect.Lists;
 import com.google.common.primitives.Ints;
 import com.noturn.ranks.Rank;
-import com.noturn.ranks.RanksRegistry;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 
@@ -10,10 +10,12 @@ import java.util.List;
 
 public class RanksLoader {
 
-    public void load(FileConfiguration config) {
-        ConfigurationSection ranks = config.getConfigurationSection("ranks");
+    public List<Rank> load(FileConfiguration config) {
+        List<Rank> out = Lists.newArrayList();
+
+        ConfigurationSection ranks = config.getConfigurationSection("Ranks");
         if (ranks == null) {
-            return;
+            return out;
         }
 
         for (String key : ranks.getKeys(false)) {
@@ -41,8 +43,10 @@ public class RanksLoader {
                     gemsprice
             );
 
-            RanksRegistry.register(rank);
+            out.add(rank);
         }
+
+        return out;
     }
 
 }

@@ -5,6 +5,7 @@ import gnu.trove.map.hash.TIntObjectHashMap;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class RanksRegistry {
@@ -14,20 +15,14 @@ public class RanksRegistry {
 
     public static Rank DEFAULT_RANK;
 
-    public static void register(Rank... ranks) {
+    public static void register(List<Rank> ranks) {
         for (Rank rank : ranks) {
-            if (RANKS_BY_ID.containsKey(rank.getId())) {
-                continue;
-            }
-
             RANKS_BY_ID.put(rank.getId(), rank);
 
             if (rank.isDefaultRank()) {
-                DEFAULT_RANK = rank;
-            }
+                System.out.println("O Rank default tem o ID " + rank.getId());
 
-            if (RANKS_BY_NAME.containsKey(rank.getDisplayName())) {
-                continue;
+                DEFAULT_RANK = rank;
             }
 
             RANKS_BY_NAME.put(rank.getDisplayName(), rank);

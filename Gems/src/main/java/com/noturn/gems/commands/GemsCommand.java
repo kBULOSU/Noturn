@@ -68,7 +68,13 @@ public class GemsCommand {
             return;
         }
 
-        userController.merge(player, amount, true);
+        Double merge = userController.merge(player, amount, true);
+
+        if (merge == null) {
+            userDAO.delete(player);
+        } else {
+            userDAO.insertOrUpdate(player, merge);
+        }
 
         execution.sendMessage(
                 "§eVocê adicionou §f%s §egemas para §f%s§e!",
